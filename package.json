@@ -1,0 +1,11 @@
+{
+  "name": "casino",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Bizzab/casino.git",
+  "author": "Cash Mcgriddy <99050972+CashBowen@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
