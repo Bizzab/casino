@@ -42,5 +42,14 @@ wss.on('connection', (ws) => {
         });
       }
     }
+
+    if (data.type === 'updateChips') {
+      playerChips[data.seatId] = data.chips;
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ type: 'chipsUpdated', seatId: data.seatId, chips: data.chips }));
+        }
+      });
+    }
   });
 });
