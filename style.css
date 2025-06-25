@@ -1,0 +1,172 @@
+/* Reset & Basic Layout */
+body {
+  background-color: #3e2c1c;
+  color: #f4e6d7;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header */
+h1 {
+  padding: 20px;
+  background-color: #7b4b2b;
+  margin: 0;
+  font-size: 2rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+/* Poker Table */
+#table {
+  position: relative;
+  background: radial-gradient(#2a6630, #1b4420);
+  width: 600px;
+  height: 400px;
+  margin: 30px auto;
+  border: 12px solid #5b3924;
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
+
+/* Player Seats */
+.seat {
+  position: absolute;
+  width: 90px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff9f0;
+  border: 1px solid #d9c5b2;
+  border-radius: 12px;
+  text-align: center;
+  padding-top: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Seat Positions (clockwise) */
+#seat1 { top: 20px; left: 255px; }
+#seat2 { top: 90px; left: 500px; }
+#seat3 { top: 300px; left: 490px; }
+#seat4 { top: 340px; left: 255px; }
+#seat5 { top: 300px; left: 10px; }
+#seat6 { top: 90px; left: 0px; }
+
+/* Chips Display */
+.chips {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: gold;
+}
+
+/* Card Emoji Animation */
+.card-emoji {
+  position: absolute;
+  font-size: 2rem;
+  transition: all 0.8s ease, transform 0.6s ease;
+  transform: rotateY(0deg);
+  pointer-events: none;
+}
+
+/* Flipped Card State */
+.card-emoji.flipped {
+  transform: rotateY(0deg);
+}
+
+/* Community Cards */
+#board {
+  position: absolute;
+  top: 150px;
+  left: 160px;
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+.comm-card {
+  font-size: 2rem;
+  width: 40px;
+  height: 60px;
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s ease;
+}
+
+/* Burn Pile Label */
+#burn-pile {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 1.2rem;
+  color: #ff9966;
+}
+
+/* Deal Button */
+button {
+  margin-top: 20px;
+  padding: 10px 30px;
+  font-size: 1rem;
+  background-color: goldenrod;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #2c1c0f;
+  box-shadow: 2px 2px 6px #000;
+}
+
+button:hover {
+  background-color: #ffc300;
+  transform: scale(1.05);
+}
+
+#betting-panel {
+  margin-top: 20px;
+  background-color: #4a2e1d;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+}
+
+#betting-panel button {
+  padding: 10px 20px;
+  background-color: goldenrod;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #2c1c0f;
+  font-weight: bold;
+}
+
+#betting-panel button:hover {
+  background-color: #ffc107;
+}
+
+#raise-amount {
+  width: 100px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+#seat-selection {
+  margin-top: 20px;
+}
+#seat-selection button {
+  margin: 5px;
+  padding: 8px 16px;
+  font-weight: bold;
+  background-color: #eee;
+  border: 1px solid #aaa;
+  cursor: pointer;
+}
+#seat-selection button:hover {
+  background-color: #ffd700;
+}
