@@ -5,6 +5,9 @@
   "repository": "https://github.com/Bizzab/casino.git",
   "author": "Cash Mcgriddy <99050972+CashBowen@users.noreply.github.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^5.1.0"
   }
