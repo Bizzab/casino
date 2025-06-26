@@ -1,7 +1,7 @@
 {
   "name": "casino",
   "version": "1.0.0",
-  "main": "src/public/index.js",
+  "main": "src/server.js",
   "repository": "https://github.com/Bizzab/casino.git",
   "author": "Cash Mcgriddy <99050972+CashBowen@users.noreply.github.com>",
   "license": "MIT",
