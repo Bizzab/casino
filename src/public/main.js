@@ -12,7 +12,7 @@ const playerChips = {
 };
 
 // Connect to WebSocket server
-const socket = new WebSocket('ws://localhost:3000'); // Use your Render URL
+const socket = new WebSocket('wss://casino-vaqj.onrender.com'); // Use your Render URL
 
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
