@@ -1,5 +1,3 @@
-const suits = ['♠️', '♥️', '♦️', '♣️'];
-const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const claimedSeats = new Set();
 let localSeat = null;
 let pot = 0;
@@ -10,27 +8,36 @@ const playerChips = {
   seat3: 1000,
   seat4: 1000,
   seat5: 1000,
-  seat6: 1000
+  seat6: 1000,
 };
 
 // Connect to WebSocket server
-const socket = new WebSocket('wss://casino-vaqj.onrender.com'); // Replace with your Render URL
+const socket = new WebSocket('ws://localhost:3000'); // Use your Render URL
 
-// Handle incoming WebSocket messages
-socket.onmessage = function (event) {
+socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
   if (data.type === 'seatClaimed') {
     claimedSeats.add(data.seatId);
-    document.getElementById(data.seatId).style.backgroundColor = '#ffd700'; // Highlight claimed seat
+    const seatEl = document.getElementById(data.seatId);
+    if (seatEl) seatEl.style.backgroundColor = '#ffd700'; // Highlight claimed seat
   }
 
   if (data.type === 'chipsUpdated') {
-    document.getElementById(`chips${data.seatId}`).textContent = `$${data.chips}`;
+    const chipsEl = document.getElementById(`chips${data.seatId.replace('seat', '')}`);
+    if (chipsEl) chipsEl.textContent = `$${data.chips}`;
+  }
+
+  if (data.type === 'yourHand') {
+    showPlayerHand(data.hand);
+  }
+
+  if (data.type === 'cardsDealt') {
+    // Optionally, show a message or animation
   }
 };
 
-// Function to claim a seat
+// Claim seat function (expose globally)
 window.claimSeat = function (seatId) {
   if (claimedSeats.has(seatId)) {
     alert(`${seatId} is already taken.`);
@@ -40,39 +47,24 @@ window.claimSeat = function (seatId) {
     alert(`You are already seated at ${localSeat}.`);
     return;
   }
-
   localSeat = seatId;
   socket.send(JSON.stringify({ type: 'claimSeat', seatId }));
 };
 
-// Function to update chips
+// Update chips function (send to server)
 window.updateChips = function (seatId, chips) {
   socket.send(JSON.stringify({ type: 'updateChips', seatId, chips }));
 };
 
-// Function to get a deck of cards
-function getDeck() {
-  const deck = [];
-  suits.forEach(s => values.forEach(v => deck.push(`${v}${s}`)));
-  return deck;
-}
-
-// Function to shuffle the deck
-function shuffle(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-}
-
-// Function to update the chip display
-function updateChips() {
+// Update chips display locally
+function updateChipsDisplay() {
   for (let i = 1; i <= 6; i++) {
-    document.getElementById(`chips${i}`).textContent = `$${playerChips[`seat${i}`]}`;
+    const chipsEl = document.getElementById(`chips${i}`);
+    if (chipsEl) chipsEl.textContent = `$${playerChips[`seat${i}`]}`;
   }
 }
 
-// Function to log game actions
+// Log game actions to page
 function logAction(text) {
   const log = document.createElement('div');
   log.textContent = `${text} (Pot: $${pot})`;
@@ -80,88 +72,77 @@ function logAction(text) {
   document.body.appendChild(log);
 }
 
-// Function to handle player actions (call, raise, fold)
-function playerAction(action) {
-  const seat = localSeat;
-  if (!seat) return;
+// Handle player actions: call, raise, fold
+window.playerAction = function (action) {
+  if (!localSeat) return;
 
   if (action === 'call') {
     const callAmount = 20;
-    if (playerChips[seat] >= callAmount) {
-      playerChips[seat] -= callAmount;
+    if (playerChips[localSeat] >= callAmount) {
+      playerChips[localSeat] -= callAmount;
       pot += callAmount;
-      logAction(`${seat} calls $${callAmount}`);
-      socket.send(JSON.stringify({ type: 'updateChips', seatId: seat, chips: playerChips[seat] }));
+      logAction(`${localSeat} calls $${callAmount}`);
+      socket.send(JSON.stringify({ type: 'updateChips', seatId: localSeat, chips: playerChips[localSeat] }));
     }
   } else if (action === 'raise') {
-    const raiseBy = parseInt(document.getElementById('raise-amount').value);
-    if (raiseBy > 0 && playerChips[seat] >= raiseBy) {
-      playerChips[seat] -= raiseBy;
+    const raiseBy = parseInt(document.getElementById('raise-amount').value, 10);
+    if (raiseBy > 0 && playerChips[localSeat] >= raiseBy) {
+      playerChips[localSeat] -= raiseBy;
       pot += raiseBy;
-      logAction(`${seat} raises $${raiseBy}`);
-      socket.send(JSON.stringify({ type: 'updateChips', seatId: seat, chips: playerChips[seat] }));
+      logAction(`${localSeat} raises $${raiseBy}`);
+      socket.send(JSON.stringify({ type: 'updateChips', seatId: localSeat, chips: playerChips[localSeat] }));
     }
   } else if (action === 'fold') {
-    logAction(`${seat} folds`);
+    logAction(`${localSeat} folds`);
   }
-  updateChips();
-}
+  updateChipsDisplay();
+};
 
-// Function to deal cards to players
-function dealCards() {
+// Deal cards to players (request from server)
+window.dealCards = function () {
   if (!localSeat) {
-    alert("Set your seat using setLocalSeat('seatX') before dealing.");
+    alert("Set your seat using claimSeat('seatX') before dealing.");
     return;
   }
+  socket.send(JSON.stringify({ type: 'dealCards' }));
+};
 
-  const deck = getDeck();
-  shuffle(deck);
-
+// Show player's hand
+function showPlayerHand(hand) {
+  // Remove old cards
   document.querySelectorAll('.card-emoji').forEach(el => el.remove());
-  ['flop1', 'flop2', 'flop3', 'turn', 'river'].forEach(id => {
-    document.getElementById(id).textContent = '🂠';
-  });
 
-  const hands = {};
-  for (let i = 1; i <= 6; i++) {
-    const seat = `seat${i}`;
-    const c1 = deck.pop();
-    const c2 = deck.pop();
-    hands[seat] = [c1, c2];
+  // Show new cards for local seat
+  const seat = document.getElementById(localSeat);
+  if (!seat) return;
 
-    const offset1 = (seat === localSeat) ? -25 : 0;
-    const offset2 = (seat === localSeat) ? 25 : 0;
+  hand.forEach((cardText, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card-emoji';
+    card.textContent = '🂠'; // Start face down
+    document.getElementById('table').appendChild(card);
 
-    dealToPlayer(seat, c1, i * 400 + 100, offset1);
-    dealToPlayer(seat, c2, i * 400 + 500, offset2);
-  }
-}
+    // Start at center of table
+    card.style.left = '270px';
+    card.style.top = '170px';
 
-// Function to deal cards to a specific player
-function dealToPlayer(seatId, cardText, delay, xOffset = 0) {
-  const card = document.createElement('div');
-  card.className = 'card-emoji';
-  card.textContent = '🂠';
-  document.getElementById('table').appendChild(card);
+    // Calculate destination
+    const x = seat.offsetLeft + 30 + (idx === 0 ? -25 : 25);
+    const y = seat.offsetTop + 60;
 
-  card.style.left = '270px';
-  card.style.top = '170px';
+    // Animate movement
+    setTimeout(() => {
+      card.style.left = `${x}px`;
+      card.style.top = `${y}px`;
+    }, 100 + idx * 400);
 
-  const seat = document.getElementById(seatId);
-  const x = seat.offsetLeft + 30 + xOffset;
-  const y = seat.offsetTop + 60;
-
-  setTimeout(() => {
-    card.style.left = `${x}px`;
-    card.style.top = `${y}px`;
-  }, delay);
-
-  setTimeout(() => {
-    if (seatId === localSeat) {
+    // Flip to reveal after movement
+    setTimeout(() => {
       card.textContent = cardText;
       card.classList.add('flipped');
-    } else {
-      card.textContent = '🂠';
-    }
-  }, delay + 500);
+    }, 600 + idx * 400);
+  });
 }
+
+// Initial update of chips display on page load
+updateChipsDisplay();
