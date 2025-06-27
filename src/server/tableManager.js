@@ -19,12 +19,14 @@ function handleMessage(data, wss, ws) {
     if (!claimedSeats.has(data.seatId)) {
       claimedSeats.add(data.seatId);
       broadcast(wss, { type: 'seatClaimed', seatId: data.seatId });
+      console.log(`${data.seatId} claimed by ${ws._socket.remoteAddress}`);
     }
   }
 
   if (data.type === 'updateChips') {
     playerChips[data.seatId] = data.chips;
     broadcast(wss, { type: 'chipsUpdated', seatId: data.seatId, chips: data.chips });
+    console.log(`Chips updated for ${data.seatId}: $${data.chips}`);
   }
 
   if (data.type === 'dealCards') {
